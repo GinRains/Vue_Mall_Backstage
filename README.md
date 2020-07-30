@@ -9,5 +9,5 @@
     去掉一个判断条件代码: 'includeHalfChecked &&'
 
 ## 运行
-    npm run dev
+    npm run serve
 

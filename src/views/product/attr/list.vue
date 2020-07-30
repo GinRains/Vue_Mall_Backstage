@@ -115,10 +115,22 @@
       // 收集数据并发送请求
       handleAttr({categoryId, level}) {
         if (level === 1) {
+          // 清空上一次渲染的数据
+          this.attrList = []
+          this.category2Id = ''
+          this.category3Id = ''
+
           this.category1Id = categoryId
         } else if (level === 2) {
+          // 清空上一次渲染的数据
+          this.attrList = []
+          this.category3Id = ''
+
           this.category2Id = categoryId
         } else {
+          // 收集表单categoryId
+          this.attrForm.categoryId = categoryId
+
           this.category3Id = categoryId
 
           // 请求属性值
@@ -136,13 +148,21 @@
       },
       // 切换添加或更新表单显示
       addAttr() {
+        // 清空上一次添加属性的数据
+        this.attrForm = {
+          attrName: '',
+          attrValueList: [],
+          categoryId: this.category3Id,
+          categoryLevel: 3
+        }
+
         this.isShow = false
         this.isDisabled = true
       },
       // 修改属性
       async updateAttr(attr) {
         this.isShow = false
-        let newAttr = {...attr}
+        const newAttr = {...attr}
         Object.keys(newAttr).forEach(item => {
           const str = Object.prototype.toString.call(newAttr[item])
           if(str.slice(8, -1) === 'Array') {
@@ -153,7 +173,22 @@
         this.attrForm = newAttr
       },
       deleteAttr(attr) {
-
+        this.$confirm(`此操作将永久删除${attr.attrName}, 是否继续?`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(async () => {
+          const response = await this.$API.attr.delete(attr.id)
+          if(response.code === 200) {
+            this.$message.success("删除成功!")
+            this.getAttrValue()
+          }
+        }).catch(() => {
+          this.$message({
+            type: 'warning',
+            message: '已取消删除'
+          });
+        });
       },
       // 添加属性值
       addAttrValue() {
@@ -185,7 +220,7 @@
           }
         }else {
           const { attrValueList } = this.attrForm
-          if(attrValueList.lengtn !== 0) {
+          if(attrValueList.length !== 0) {
             const response = await this.$API.attr.addOrUpdate(this.attrForm)
             if(response.code === 200) {
               this.$message.success('数据添加成功!')
@@ -209,10 +244,10 @@
         }
       }
     },
-    watch: {
-      category3Id() {
-        this.attrForm.categoryId = this.category3Id
-      }
-    }
+    // watch: {
+    //   category3Id() {
+    //     this.attrForm.categoryId = this.category3Id
+    //   }
+    // }
   }
 </script>
