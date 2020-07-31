@@ -49,7 +49,7 @@
       style="text-align:center"
       :current-page="page"
       :page-sizes="[3, 5, 10]"
-      :pate-size="limit"
+      :page-size="limit"
       layout="prev, pager, next, jumper, ->, sizes, total"
       :total="total"
       @current-change="getTrademarkList">

@@ -7,3 +7,4 @@ export { default as clientUser } from './clientUser'
 export { default as order } from './order'
 export { default as trademark } from './trademark' // 先把trademark默认暴露引进来，在暴露出去
 export { default as attr } from './attr'
+export { default as spu } from './spu'

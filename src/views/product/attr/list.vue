@@ -1,6 +1,8 @@
 <template>
   <div>
-    <CategorySelector @handleAttr="handleAttr" :isDisabled="isDisabled"></CategorySelector>
+    <el-card>
+      <CategorySelector @handleCategory="handleCategory" :isDisabled="isDisabled"></CategorySelector>
+    </el-card>
     <el-card v-show="isShow">
       <el-button type="primary" icon="el-icon-plus" :disabled="!category3Id" @click="addAttr">添加属性</el-button>
       <el-table
@@ -40,7 +42,7 @@
           width="150">
           <template v-slot="{row, $index}">
             <HintButton icon="el-icon-edit" type="primary" size="mini" title="修改"
-                        @click="updateAttr(row)"></HintButton>
+                        @click="updateAttr(row, $index)"></HintButton>
             <HintButton icon="el-icon-delete" type="danger" size="mini" title="删除"
                         @click="deleteAttr(row)"></HintButton>
           </template>
@@ -68,7 +70,14 @@
         </el-table-column>
         <el-table-column label="属性值名称">
           <template slot-scope="{row, $index}">
-            <el-input v-model="row.valueName" placeholder="请输入属性值名称"></el-input>
+            <el-input
+              :ref="$index"
+              v-if="row.isEdit"
+              v-model="row.valueName"
+              @blur="toggleToView(row, $index)"
+              @keyup.13="toggleToView(row, $index)"
+              placeholder="请输入属性值名称"></el-input>
+            <span v-else @click="toggleToEdit(row, $index)">{{row.valueName}}</span>
           </template>
         </el-table-column>
         <el-table-column label="操作">
@@ -85,6 +94,8 @@
 </template>
 
 <script>
+  import cloneDeep from "lodash/cloneDeep"
+
   export default {
     name: 'AttrList',
     data() {
@@ -113,7 +124,7 @@
     },
     methods: {
       // 收集数据并发送请求
-      handleAttr({categoryId, level}) {
+      handleCategory({categoryId, level}) {
         if (level === 1) {
           // 清空上一次渲染的数据
           this.attrList = []
@@ -160,14 +171,11 @@
         this.isDisabled = true
       },
       // 修改属性
-      async updateAttr(attr) {
+      async updateAttr(attr, index) {
         this.isShow = false
-        const newAttr = {...attr}
-        Object.keys(newAttr).forEach(item => {
-          const str = Object.prototype.toString.call(newAttr[item])
-          if(str.slice(8, -1) === 'Array') {
-            newAttr[item] = [...attr[item]]
-          }
+        const newAttr = cloneDeep(attr)
+        newAttr.attrValueList.forEach(item => {
+          this.$set(item, "isEdit", false)
         })
 
         this.attrForm = newAttr
@@ -201,7 +209,12 @@
          */
         this.attrForm.attrValueList.push({
           valueName: '',
-          attrId: this.attrForm.id
+          attrId: this.attrForm.id,
+          isEdit: true
+        })
+        // ref需要渲染完后才能获取对应的ref值
+        this.$nextTick(() => {
+          this.$refs[this.attrForm.attrValueList.length - 1].focus()
         })
       },
       // 删除添加的属性值
@@ -210,6 +223,18 @@
       },
       // 增加或修改属性
       async addOrUpdateAttr() {
+        // 整理参数
+        // 1. 列表为空不能发送请求
+        // 2. 如果列表中有空值，则过滤掉
+        // 3. 去掉无用属性 isEdit
+        if(!this.attrForm.attrValueList.length) return void 0
+        this.attrForm.attrValueList = this.attrForm.attrValueList.filter(item => {
+          if(item.valueName.trim()) {
+            delete item.isEdit
+            return true
+          }
+        })
+
         if(this.attrForm.id) {
           const response = await this.$API.attr.addOrUpdate(this.attrForm)
           if(response.code === 200) {
@@ -230,6 +255,31 @@
             }
           }
         }
+      },
+      // 切换为观察模式
+      toggleToView(attr, index) {
+        // 如果列表里面没有值，不能变为观察模式
+        if(!attr.valueName.trim()) return void 0
+        // 输入的数据是否已经在属性值列表当中存在(除去自身) 存在需要提示，不能切换查看模式
+        const flag = this.attrForm.attrValueList.some(item => {
+          if(item !== attr) {
+            return item.valueName === attr.valueName
+          }
+        })
+        if(flag) {
+          this.$message.warning(`已存在${attr.valueName}`)
+          this.attrForm.attrValueList[index].valueName = ""
+          return void 0
+        }
+
+        attr.isEdit = false
+      },
+      toggleToEdit(attr, index) {
+        attr.isEdit = true
+
+        this.$nextTick(() => {
+          this.$refs[index].focus()
+        })
       }
     },
     computed: {
@@ -243,11 +293,6 @@
 
         }
       }
-    },
-    // watch: {
-    //   category3Id() {
-    //     this.attrForm.categoryId = this.category3Id
-    //   }
-    // }
+    }
   }
 </script>
