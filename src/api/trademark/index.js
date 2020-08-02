@@ -11,8 +11,12 @@ export default {
    * DELETE /admin/product/baseTrademark/remove/{id}  删除
    * PUT /admin/product/baseTrademark/update  更新
    * POST /admin/product/baseTrademark/save   增加
-   *
+   * GET /admin/product/baseTrademark/getTrademarkList
    */
+
+  getSpuTrademark() {
+    return request.get(`${api_name}/getTrademarkList`)
+  },
 
   getOnlyOne(id) {
     return request({

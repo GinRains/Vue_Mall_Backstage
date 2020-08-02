@@ -12,12 +12,7 @@ export default {
    * POST /admin/product/saveSpuInfo          增加spu信息
    * POST /admin/product/updateSpuInfo        更改spu信息
    * GET /admin/product/{page}/{limit}        获取分页spu信息
-   * GET /admin/product/spuImageList/{spuId}  根据id获取图片
    */
-
-  getIdImgList(spuId) {
-    return request.get(`${api_name}/spuImageList/${spuId}`)
-  },
 
   getAllInfo() {
     return request({
@@ -40,8 +35,7 @@ export default {
   addOrUpdate(spuInfo) {
     return request({
       url: `${api_name}/${spuInfo.id ? 'updateSpuInfo' : 'saveSpuInfo'}`,
-      method: 'post',
-      data: spuInfo
+      method: 'post'
     })
   },
   getPageInfo(page, limit, category3Id) {

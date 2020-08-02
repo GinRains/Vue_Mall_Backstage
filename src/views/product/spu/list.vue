@@ -28,7 +28,7 @@
             label="操作">
             <template slot-scope="{row, $index}">
               <HintButton title="添加SKU" icon="el-icon-plus" type="primary" size="mini"></HintButton>
-              <HintButton title="修改SPU" icon="el-icon-edit" type="primary" size="mini"></HintButton>
+              <HintButton title="修改SPU" icon="el-icon-edit" type="primary" size="mini" @click="editSpuForm(row.id)"></HintButton>
               <HintButton title="查看所有SKU" icon="el-icon-info" type="info" size="mini"></HintButton>
               <HintButton title="删除SPU" icon="el-icon-delete" type="danger" size="mini"></HintButton>
             </template>
@@ -45,8 +45,8 @@
           @current-change="getSpuPageInfo">
         </el-pagination>
       </div>
-      <SpuForm v-show="isShowSpu"></SpuForm>
-      <SpuForm v-show="isShowSku"></SpuForm>
+      <SpuForm v-show="isShowSpu" ref="spuForm" :visible.sync="isShowSpu" @saveSuccess="saveSuccess"></SpuForm>
+      <SkuForm v-show="isShowSku"></SkuForm>
     </el-card>
   </div>
 </template>
@@ -67,7 +67,7 @@
         page: 1,
         limit: 3,
         total: 0,
-        isShowSpu: false, // 测试
+        isShowSpu: false,
         isShowSku: false
       }
     },
@@ -101,6 +101,27 @@
           this.total = total
           this.spuList = records
         }
+      },
+      editSpuForm(spuId) {
+        // 编辑中，给this添加spuId
+        this.spuId = spuId
+        this.$refs.spuForm.initSpuForm(spuId, this.category3Id)
+        this.isShowSpu = true
+      },
+      saveSuccess() {
+        if(this.spuId) {
+          // 从修改页面回来
+          this.getSpuPageInfo(this.page)
+        }else {
+          // 从添加页面回来
+          this.getSpuPageInfo()
+        }
+
+        // 重置子组件spuForm里的数据
+        this.$refs.spuForm.resetData()
+
+        // 清空spuId
+        this.spuId = null
       }
     },
     components: {

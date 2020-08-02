@@ -77,7 +77,7 @@
               @blur="toggleToView(row, $index)"
               @keyup.13="toggleToView(row, $index)"
               placeholder="请输入属性值名称"></el-input>
-            <span v-else @click="toggleToEdit(row, $index)">{{row.valueName}}</span>
+            <span v-else @click="toggleToEdit(row, $index)" style="display: inline-block;width: 100%;height: 100%;">{{row.valueName}}</span>
           </template>
         </el-table-column>
         <el-table-column label="操作">
@@ -227,6 +227,7 @@
         // 1. 列表为空不能发送请求
         // 2. 如果列表中有空值，则过滤掉
         // 3. 去掉无用属性 isEdit
+        console.log(this.attrForm.attrValueList)
         if(!this.attrForm.attrValueList.length) return void 0
         this.attrForm.attrValueList = this.attrForm.attrValueList.filter(item => {
           if(item.valueName.trim()) {
@@ -259,7 +260,7 @@
       // 切换为观察模式
       toggleToView(attr, index) {
         // 如果列表里面没有值，不能变为观察模式
-        if(!attr.valueName.trim()) return void 0
+        if(!attr.valueName.trim()) return void 0 // 测试
         // 输入的数据是否已经在属性值列表当中存在(除去自身) 存在需要提示，不能切换查看模式
         const flag = this.attrForm.attrValueList.some(item => {
           if(item !== attr) {
