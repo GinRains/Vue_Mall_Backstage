@@ -50,7 +50,7 @@
                       @close="row.spuSaleAttrValueList.splice(index, 1)"
                       :disable-transitions="false"
                       :key="spuSaleAttrValue.id">{{spuSaleAttrValue.saleAttrValueName}}</el-tag>
-              <el-input v-model="row.saleAttrValueName" ref="flag" v-if="row.edit" style="width: 80px;" @blur="toggleView(row)" @keyup.13.native="toggleView(row)"></el-input>
+              <el-input v-model="row.saleAttrValueName" ref="flag" v-if="row.isEdit" style="width: 80px;" @blur="toggleView(row)" @keyup.13.native="toggleView(row)"></el-input>
               <el-button v-else @click="toggleEdit(row)">+ 添加新属性</el-button>
             </template>
           </el-table-column>
@@ -63,7 +63,7 @@
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="saveSpu">保存</el-button>
-        <el-button>返回</el-button>
+        <el-button @click="back">返回</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -143,7 +143,7 @@
       },
       toggleEdit(saleAttr) {
         // 点击切换编辑模式，给当前行添加 edit 属性
-        this.$set(saleAttr, "edit", true)
+        this.$set(saleAttr, "isEdit", true)
         // 并自动获取焦点
         this.$nextTick(() => this.$refs.flag.focus())
       },
@@ -170,7 +170,7 @@
         // 清空输入框，解决后面回车跟失去焦点事件连续调用
         saleAttr.saleAttrValueName = ""
         // 切换为视图模式
-        saleAttr.edit = false
+        saleAttr.isEdit = false
       },
       removeSaleAttr(index) {
         this.$confirm('此操作将永久删除该销售属性, 是否继续?', '提示', {
@@ -205,14 +205,19 @@
       async saveSpu() {
         // 整理数据
         const {spuInfo: submitSpuInfo, spuImageList} = this
+        submitSpuInfo.category3Id = this.category3Id
         if(Object.keys(submitSpuInfo).indexOf('spuImageList') !== -1) delete submitSpuInfo.spuImageList
         // submitSpuInfo.spuSaleAttrList.forEach(saleAttr => saleAttr.spuSaleAttrValueList.map(value => ({saleAttrValueName: value.saleAttrValueName, baseSaleAttrId: value.baseSaleAttrId})))
-        submitSpuInfo.spuSaleAttrList.forEach(saleAttr => saleAttr.spuSaleAttrValueList.map(valueObj => {
-          if(valueObj.hasOwnProperty('saleAttrName')) {
-            delete valueObj.saleAttrName
-          }
-          return valueObj
-        }))
+        submitSpuInfo.spuSaleAttrList.forEach(saleAttr => {
+          delete saleAttr.saleAttrValueName
+          delete saleAttr.isEdit
+          saleAttr.spuSaleAttrValueList.map(valueObj => {
+            if(valueObj.hasOwnProperty('saleAttrName')) {
+              delete valueObj.saleAttrName
+            }
+            return valueObj
+          })
+        })
         // 整理添加的图片
         submitSpuInfo.spuImageList = spuImageList.map(spuImg => ({imgName: spuImg.imgName, imgUrl: spuImg.imgUrl}))
         // 发送请求
@@ -240,6 +245,23 @@
         this.spuImageList = []
         this.trademarkList = []
         this.saleAttrList = []
+      },
+      back() {
+        this.$emit("update:visible", false)
+        this.$emit("cancel")
+      },
+      async initAddSpuForm(category3Id) {
+        this.category3Id = category3Id
+        // 获取商品品牌
+        const resGetTrademarkList = await this.$API.trademark.getSpuTrademark()
+        if(resGetTrademarkList.code === 200) {
+          this.trademarkList = resGetTrademarkList.data
+        }
+        // 获取销售属性列表
+        const resGetSaleAttrList = await this.$API.spu.getAllInfo()
+        if(resGetSaleAttrList.code === 200) {
+          this.saleAttrList = resGetSaleAttrList.data
+        }
       }
     },
     computed: {

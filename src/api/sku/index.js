@@ -6,43 +6,30 @@ export default {
   /**
    * spu
    *
-   * GET /admin/product/baseSaleAttrList    获取所有销售属性列表
-   * DELETE /admin/product/deleteSpu/{spuId}    删除SPU
-   * GET /admin/product/getSpuById/{spuId}    获取指定spu信息
-   * POST /admin/product/saveSpuInfo          增加spu信息
-   * POST /admin/product/updateSpuInfo        更改spu信息
-   * GET /admin/product/{page}/{limit}        获取分页spu信息
+   * GET /admin/product/cancelSale/{skuId}
+   * DELETE /admin/product/deleteSku/{skuId}    删除SKU
+   * GET /admin/product/spuImageList/{spuId}   获取指定spu图片信息
+   * GET /admin/product/findBySpuId/{spuId}    获取sku信息
    */
 
-  getAllInfo() {
-    return request({
-      url: `${api_name}/baseSaleAttrList`,
-      method: 'get'
-    })
+  cancel(skuId) {
+    return request.get(`${api_name}/cancelSale/${skuId}`)
   },
-  delete(spuId) {
-    return request({
-      url: `${api_name}/deleteSpu/${spuId}`,
-      method: 'delete'
-    })
+  delete(skuId) {
+    return request.delete(`${api_name}/deleteSku/${skuId}`)
   },
-  getSpuIdInfo(spuId) {
-    return request({
-      url: `${api_name}/getSpuById/${spuId}`,
-      method: 'get'
-    })
+  getImage(spuId) {
+    return request.get(`${api_name}/spuImageList/${spuId}`)
   },
-  addOrUpdate(spuInfo) {
-    return request({
-      url: `${api_name}/${spuInfo.id ? 'updateSpuInfo' : 'saveSpuInfo'}`,
-      method: 'post'
-    })
+  getList(spuId) {
+    return request.get(`${api_name}/findBySpuId/${spuId}`)
   },
-  getPageInfo(page, limit, category3Id) {
-    return request({
-      url: `${api_name}/${page}/${limit}`,
-      params: {category3Id},
-      method: 'get'
-    })
-  }
+  /**
+  * 保存SKU
+  * POST /admin/product/saveSkuInfo
+  * POST /admin/product/updateSkuInfo
+  */
+  addUpdate (skuInfo) {
+    return request.post(`/admin/product/${skuInfo.id ? 'update' : 'save'}SkuInfo`, skuInfo)
+  },
 }

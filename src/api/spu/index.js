@@ -13,7 +13,12 @@ export default {
    * POST /admin/product/updateSpuInfo        更改spu信息
    * GET /admin/product/{page}/{limit}        获取分页spu信息
    * GET /admin/product/spuImageList/{spuId}  根据id获取图片
+   * GET /admin/product/spuSaleAttrList/{spuId}   根据spuId获取spu销售属性
    */
+
+  getSpuSaleAttrList(spuId) {
+    return request.get(`${api_name}/spuSaleAttrList/${spuId}`)
+  },
 
   getIdImgList(spuId) {
     return request.get(`${api_name}/spuImageList/${spuId}`)
